@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #define SIZE 6
+#include <string.h>
 
 typedef struct Worker {
 	unsigned long ID;
@@ -8,8 +9,8 @@ typedef struct Worker {
 	unsigned long salary;
 
 	union year {
-		char hebrew[SIZE];
 		unsigned long international;
+		char hebrew[SIZE];
 	} *y;
 }myworker;
 
@@ -19,9 +20,9 @@ typedef struct WorkerList
 	struct WorkerList* next;
 } WorkerList;
 
-
-myworker* CreateWorker(unsigned long id, char* name, unsigned long salary, union year* myyear, int yeartype);
-void printworker(myworker* worker, int yeartype);
+myworker* CreateWorker(int yeartype);
+myworker* createWorker(unsigned long id, char* name, unsigned long salary, union year* myyear, int yeartype);
+void PrintWorker(myworker* worker, int yeartype);
 WorkerList * addWorker(WorkerList *head, myworker * w);
 int index1(WorkerList *head, long unsigned id);
 int index2(WorkerList *head, long unsigned id);
@@ -34,18 +35,21 @@ void freeWorkers(WorkerList *head);
 void main() {
 	int yeartype = 0;
 	//test data
-	union year * yr = "tash";
 
-	myworker* w1 = CreateWorker(12, "arie1_2", 10, yr, yeartype);
-	printworker(w1, yeartype);
-	myworker* w2 = CreateWorker(21, "ben2_1", 5, yr, yeartype);//change head
-	printworker(w2, yeartype);
-	myworker* w3 = CreateWorker(35, "coral3_5", 100000, yr, yeartype);//add tail
-	printworker(w3, yeartype);
-	myworker* w4 = CreateWorker(44, "dan4_4", 9999, yr, yeartype);//change mid list
-	printworker(w4, yeartype);
-	myworker* w5 = CreateWorker(53, "edna5_3", 158, yr, yeartype);//change mid list
-	printworker(w5, yeartype);
+	myworker* w1 = createWorker(12, "arie1_2", 10, "tash", 0, yeartype);
+	PrintWorker(w1, yeartype);
+	myworker* w2 = createWorker(21, "ben2_1", 5, "tash", 0,yeartype);//change head
+	PrintWorker(w2, yeartype);
+	myworker* w3 = createWorker(35, "coral3_5", 100000, "tash", 0,yeartype);//add tail
+	PrintWorker(w3, yeartype);
+	myworker* w4 = createWorker(44, "dan4_4", 9999, "tash", 0,yeartype);//change mid list
+	PrintWorker(w4, yeartype);
+	myworker* w5 = createWorker(53, "edna5_3", 158, "tash", 0,yeartype);//change mid list
+	PrintWorker(w5, yeartype);
+
+	printf("Enter a worker\n");
+	myworker* userworker = CreateWorker(yeartype);
+	PrintWorker(userworker, yeartype);
 
 	WorkerList * list = (WorkerList*)malloc(sizeof(WorkerList));
 	list->data = w1;
@@ -94,8 +98,8 @@ void main() {
 	//TODO test add after reverse (should keep order by salary)
 	list = addWorker(list, w2);
 
-	myworker* w6 = CreateWorker(64, "gaya5_4", 207, yr, yeartype);//change mid list
-	printworker(w6, yeartype);
+	myworker* w6 = createWorker(64, "gaya5_4", 207, "tash", 0,yeartype);//change mid list
+	PrintWorker(w6, yeartype);
 
 	list = addWorker(list, w6);
 
@@ -120,19 +124,47 @@ void main() {
 /*
 yeartype - 0 for heb, 1 for international
 */
-myworker* CreateWorker(unsigned long id, char* name, unsigned long salary, union year* myyear, int yeartype) {
+myworker* CreateWorker(int yeartype) {
+	unsigned long id; char name[20]; unsigned long salary; char yr[SIZE]; unsigned long yir = 0;
+
+	printf("enter id: ");
+	scanf("%d", &id);
+	printf("enter name: ");
+	scanf("%s", name);
+	printf("enter salary :");
+	scanf("%d", &salary);
+
+	printf("enter year (%s): ", yeartype ? "intl" : "heb");
+	if (yeartype == 0) {
+		scanf("%s", yr);
+	}
+	else {
+		scanf("%d", yir);
+	}
+	return createWorker(id, name, salary, yr, yir, yeartype);
+
+}
+
+myworker* createWorker(unsigned long id, char* name, unsigned long salary, char* yr, unsigned long yir, int yeartype) {
 
 	myworker* worker;
 	worker = (myworker*)malloc(sizeof(myworker));
+	if (!worker) { exit(0); }
 	worker->ID = id;
-	worker->name = name;
+	worker->name = (char*)malloc(sizeof(char)*20);
+	if (!worker->name) { exit(0); }
+	strcpy(worker->name, name);
 	worker->salary = salary;
-	if (yeartype) worker->y = myyear->international;
-	else worker->y = myyear->hebrew;
+	if (yeartype) worker->y = yir;
+	else {
+		worker->y = (char*)malloc(sizeof(char) * 6);
+		if (!worker->y) {exit(0);}
+		strcpy(worker->y, yr);
+	}
 	return worker;
 }
 
-void printworker(myworker* worker, int yeartype) {
+void PrintWorker(myworker* worker, int yeartype) {
 
 	printf("the details about the worker:\n id:%u \n name:%s\n salary: %u \n",
 		worker->ID, worker->name, worker->salary);
